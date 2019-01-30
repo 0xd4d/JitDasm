@@ -47,7 +47,9 @@ namespace JitDasm {
 	sealed class JitDasmOptions {
 		public int Pid;
 		public string ModuleName;
+		public string LoadModule;
 		public string OutputDir;
+		public readonly List<string> AssemblySearchPaths = new List<string>();
 
 		public readonly MemberFilter TypeFilter = new MemberFilter();
 		public readonly MemberFilter MethodFilter = new MemberFilter();
@@ -55,6 +57,7 @@ namespace JitDasm {
 		public bool ShowAddresses = true;
 		public bool ShowHexBytes = true;
 		public bool HeapSearch = false;
+		public bool RunClassConstructors = true;
 		public FilenameFormat FilenameFormat = FilenameFormat.MemberName;
 		public FileOutputKind FileOutputKind = FileOutputKind.Stdout;
 		public DisassemblerOutputKind DisassemblerOutputKind = DisassemblerOutputKind.Masm;

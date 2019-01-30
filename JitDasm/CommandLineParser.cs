@@ -95,6 +95,31 @@ namespace JitDasm {
 					i++;
 					break;
 
+				case "-l":
+				case "--load":
+					if (next == null)
+						throw new CommandLineParserException("Missing module filename");
+					if (!File.Exists(next))
+						throw new CommandLineParserException($"Could not find module {next}");
+					options.LoadModule = Path.GetFullPath(next);
+					i++;
+					break;
+
+				case "--no-cctor":
+					options.RunClassConstructors = false;
+					break;
+
+				case "-s":
+				case "--search":
+					if (next == null)
+						throw new CommandLineParserException("Missing assembly search path");
+					foreach (var path in next.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries)) {
+						if (Directory.Exists(path))
+							options.AssemblySearchPaths.Add(path);
+					}
+					i++;
+					break;
+
 				case "--diffable":
 					options.Diffable = true;
 					break;
@@ -233,6 +258,11 @@ namespace JitDasm {
 				}
 			}
 
+			if (!string.IsNullOrEmpty(options.LoadModule)) {
+				options.Pid = Process.GetCurrentProcess().Id;
+				options.ModuleName = options.LoadModule;
+			}
+
 			if (string.IsNullOrEmpty(options.ModuleName))
 				throw new CommandLineParserException("Missing module name");
 			if (options.Pid == 0)
@@ -281,6 +311,8 @@ namespace JitDasm {
 -p, --pid <pid>                 Process id
 -pn, --process <name>           Process name
 -m, --module <name>             Name of module to disassemble
+-l, --load <module>             Load module (for execution) into this process and jit every method
+--no-cctor                      Don't run all .cctors before jitting methods (used with -l)
 --filename-format <fmt>         Filename format. <fmt>:
     name            => (default) member name
     tokname         => token + member name
@@ -304,6 +336,7 @@ namespace JitDasm {
 --no-addr                       Don't show instruction addresses
 --no-bytes                      Don't show instruction bytes
 --heap-search                   Check the GC heap for instantiated generic types
+-s, --search <path>             Add assembly search paths (used with -l), {Path.PathSeparator}-delimited
 -h, --help                      Show this help message
 
 <tok-or-name> can be semicolon separated or multiple options can be used. Names support wildcards.
@@ -314,6 +347,7 @@ Generic methods and methods in generic types aren't 100% supported. Try --heap-s
 Examples:
     {exe} -m MyModule -pn myexe -f type -o c:\out\dir --method Decode
     {exe} -p 1234 -m System.Private.CoreLib -o C:\out\dir --diffable -f type
+    {exe} -l c:\path\to\mymodule.dll
 ";
 			Console.Write(msg);
 		}
