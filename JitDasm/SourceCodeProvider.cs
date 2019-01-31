@@ -66,6 +66,8 @@ namespace JitDasm {
 				lastModule = metadataProvider.GetModule(method.ModuleFilename);
 				lastMethod = null;
 			}
+			if (lastModule?.PdbState == null)
+				return null;
 			if (lastMethod?.MDToken.Raw != method.MethodToken)
 				lastMethod = lastModule?.ResolveToken(method.MethodToken) as MethodDef;
 			return lastMethod;
