@@ -45,7 +45,7 @@ namespace JitDasm {
 
 				var jitDasmOptions = CommandLineParser.Parse(args);
 				if (!string.IsNullOrEmpty(jitDasmOptions.LoadModule))
-					MethodJitter.JitMethods(jitDasmOptions.LoadModule, jitDasmOptions.RunClassConstructors, jitDasmOptions.AssemblySearchPaths);
+					MethodJitter.JitMethods(jitDasmOptions.LoadModule, jitDasmOptions.TypeFilter, jitDasmOptions.MethodFilter, jitDasmOptions.RunClassConstructors, jitDasmOptions.AssemblySearchPaths);
 				var (bitness, methods, knownSymbols) = GetMethodsToDisassemble(jitDasmOptions.Pid, jitDasmOptions.ModuleName, jitDasmOptions.TypeFilter, jitDasmOptions.MethodFilter, jitDasmOptions.HeapSearch);
 				var jobs = GetJobs(methods, jitDasmOptions.OutputDir, jitDasmOptions.FileOutputKind, jitDasmOptions.FilenameFormat, out string baseDir);
 				if (!string.IsNullOrEmpty(baseDir))

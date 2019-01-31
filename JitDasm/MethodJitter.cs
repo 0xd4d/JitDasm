@@ -32,9 +32,13 @@ namespace JitDasm {
 	readonly struct MethodJitter : IDisposable {
 		static readonly string[] asmExtensions = new[] { ".dll", ".exe" };
 		readonly string[] searchPaths;
+		readonly MemberFilter typeFilter;
+		readonly MemberFilter methodFilter;
 		readonly Dictionary<string, Assembly> nameToAssembly;
 
-		MethodJitter(string module, bool runClassConstructors, IEnumerable<string> searchPaths) {
+		MethodJitter(string module, MemberFilter typeFilter, MemberFilter methodFilter, bool runClassConstructors, IEnumerable<string> searchPaths) {
+			this.typeFilter = typeFilter;
+			this.methodFilter = methodFilter;
 			var paths = new List<string>();
 			paths.Add(Path.GetDirectoryName(Path.GetFullPath(module)));
 			foreach (var path in searchPaths) {
@@ -66,11 +70,15 @@ namespace JitDasm {
 				}
 			}
 			foreach (var type in allTypes) {
+				if (!typeFilter.IsMatch(MakeClrmdTypeName(type.FullName), (uint)type.MetadataToken))
+					continue;
 				bool isDelegate = typeof(Delegate).IsAssignableFrom(type);
 				foreach (var method in GetMethods(type)) {
 					if (method.IsAbstract)
 						continue;
 					if (method.IsGenericMethod)
+						continue;
+					if (!methodFilter.IsMatch(method.Name, (uint)method.MetadataToken))
 						continue;
 #if NETCOREAPP
 					// Not supported on .NET Core
@@ -92,6 +100,16 @@ namespace JitDasm {
 					}
 				}
 			}
+		}
+
+		// clrmd doesn't show the generic tick, eg. List`1 is shown as List
+		static string MakeClrmdTypeName(string name) {
+			if (name.Length > 0 && char.IsDigit(name[name.Length - 1])) {
+				int index = name.LastIndexOf('`');
+				if (index >= 0)
+					return name.Substring(0, index);
+			}
+			return name;
 		}
 
 		static IEnumerable<Type> GetTypes(Assembly asm) {
@@ -154,8 +172,8 @@ namespace JitDasm {
 				yield return m;
 		}
 
-		public static void JitMethods(string module, bool runClassConstructors, IEnumerable<string> searchPaths) {
-			using (var loader = new MethodJitter(module, runClassConstructors, searchPaths)) { }
+		public static void JitMethods(string module, MemberFilter typeFilter, MemberFilter methodFilter, bool runClassConstructors, IEnumerable<string> searchPaths) {
+			using (var loader = new MethodJitter(module, typeFilter, methodFilter, runClassConstructors, searchPaths)) { }
 		}
 
 		void IDisposable.Dispose() {
