@@ -33,33 +33,33 @@ jitdasm -p 1234 --diffable -m ConsoleApp1 --method TestMethod
         mov       ecx,[rcx+8]
         call      System.Console.WriteLine(Int32)
 
-;             for (int i = 0; i < args.Length; i++)
-;                  ^^^^^^^^^
+;           for (int i = 0; i < args.Length; i++)
+;                ^^^^^^^^^
         xor       edi,edi
 
-;             for (int i = 0; i < args.Length; i++)
-;                             ^^^^^^^^^^^^^^^
+;           for (int i = 0; i < args.Length; i++)
+;                           ^^^^^^^^^^^^^^^
         mov       ebx,[rsi+8]
         test      ebx,ebx
         jle       LBL_1
 
 LBL_0:
-;                 Console.WriteLine(args[i]);
+;               Console.WriteLine(args[i]);
         movsxd    rcx,edi
         mov       rcx,[rsi+rcx*8+10h]
         call      System.Console.WriteLine(System.String)
 
-;             for (int i = 0; i < args.Length; i++)
-;                                              ^^^
+;           for (int i = 0; i < args.Length; i++)
+;                                            ^^^
         inc       edi
 
-;             for (int i = 0; i < args.Length; i++)
-;                             ^^^^^^^^^^^^^^^
+;           for (int i = 0; i < args.Length; i++)
+;                           ^^^^^^^^^^^^^^^
         cmp       ebx,edi
         jg        LBL_0
 
 LBL_1:
-;         }
+;       }
         add       rsp,20h
         pop       rbx
         pop       rsi

@@ -307,11 +307,13 @@ namespace JitDasm {
 			for (int i = 0; i < length; i++) {
 				var c = line[i + index];
 				if (c == '\t') {
-					for (int j = 0; j < TAB_SIZE; j++)
+					for (int j = column % TAB_SIZE; j < TAB_SIZE; j++, column++)
 						Write(output, forceChar == '\0' ? ' ' : forceChar, buf, ref bufIndex);
 				}
-				else
+				else {
 					Write(output, forceChar == '\0' ? c : forceChar, buf, ref bufIndex);
+					column++;
+				}
 			}
 			output.Write(buf, 0, bufIndex);
 		}
