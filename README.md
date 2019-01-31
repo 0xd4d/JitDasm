@@ -86,3 +86,7 @@ cd JitDasm
 dotnet restore
 dotnet build -c Release
 ```
+
+# License
+
+MIT
