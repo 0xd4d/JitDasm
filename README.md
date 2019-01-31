@@ -72,6 +72,54 @@ LBL_1:
 - Generic methods and methods in generic types can't be disassembled. It's possibly a DAC API limitation. Try `--heap-search` to find instantiated generic types on the heap.
 - IL <-> native IP mapping that JitDasm gets from the CLR isn't always accurate so some source code statements aren't shown, especially in optimized methods. This gets worse if there are a lot of inlined methods.
 
+# Help message (`jitdasm -h`)
+
+```
+Disassembles jitted methods in .NET processes
+
+-p, --pid <pid>                 Process id
+-pn, --process <name>           Process name
+-m, --module <name>             Name of module to disassemble
+-l, --load <module>             Load module (for execution) into this process and jit every method
+--no-run-cctor                  Don't run all .cctors before jitting methods (used with -l)
+--filename-format <fmt>         Filename format. <fmt>:
+    name            => (default) member name
+    tokname         => token + member name
+    token           => token
+-f, --file <kind>               Output file. <kind>:
+    stdout          => (default) stdout
+    file            => One file, use -o to set filename
+    type            => One file per type, use -o to set directory
+    method          => One file per method, use -o to set directory
+-d, --disasm <kind>            Disassembler. <kind>:
+    masm            => (default) MASM syntax
+    nasm            => NASM syntax
+    gas             => GNU assembler (AT&T) syntax
+    att             => same as gas
+-o, --output <path>             Output filename or directory
+--type <tok-or-name>            Disassemble this type (wildcards supported) or type token
+--type-ignore <tok-or-name>     Don't disassemble this type (wildcards supported) or type token
+--method <tok-or-name>          Disassemble this method (wildcards supported) or method token
+--method-ignore <tok-or-name>   Don't disassemble this method (wildcards supported) or method token
+--diffable                      Create diffable disassembly
+--no-addr                       Don't show instruction addresses
+--no-bytes                      Don't show instruction bytes
+--no-source                     Don't show source code
+--heap-search                   Check the GC heap for instantiated generic types
+-s, --search <path>             Add assembly search paths (used with -l), ;-delimited
+-h, --help                      Show this help message
+
+<tok-or-name> can be semicolon separated or multiple options can be used. Names support wildcards.
+Token ranges are also supported eg. 0x06000001-0x06001234.
+
+Generic methods and methods in generic types aren't 100% supported. Try --heap-search.
+
+Examples:
+    JitDasm -m MyModule -pn myexe -f type -o c:\out\dir --method Decode
+    JitDasm -p 1234 -m System.Private.CoreLib -o C:\out\dir --diffable -f type
+    JitDasm -l c:\path\to\mymodule.dll
+```
+
 # Similar tools
 
 - coreclr debug builds can [create disasm](https://github.com/dotnet/coreclr/blob/master/Documentation/building/viewing-jit-dumps.md)
