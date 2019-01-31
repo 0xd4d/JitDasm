@@ -126,24 +126,6 @@ namespace JitDasm {
 			public void Dispose() => sourceCodeProvider.Dispose();
 		}
 
-		sealed class SymbolResolverImpl : Iced.Intel.ISymbolResolver {
-			readonly KnownSymbols knownSymbols;
-			readonly Iced.Intel.ISymbolResolver symbolResolver;
-
-			public SymbolResolverImpl(Iced.Intel.ISymbolResolver symbolResolver, KnownSymbols knownSymbols) {
-				this.symbolResolver = symbolResolver;
-				this.knownSymbols = knownSymbols;
-			}
-
-			public bool TryGetSymbol(int operand, int instructionOperand, ref Instruction instruction, ulong address, int addressSize, out SymbolResult symbol) {
-				if (symbolResolver.TryGetSymbol(operand, instructionOperand, ref instruction, address, addressSize, out symbol))
-					return true;
-				if (knownSymbols.TryGetSymbol(address, out symbol))
-					return true;
-				return false;
-			}
-		}
-
 		static Formatter CreateFormatter(Iced.Intel.ISymbolResolver symbolResolver, bool diffable, DisassemblerOutputKind disassemblerOutputKind) {
 			Formatter formatter;
 			switch (disassemblerOutputKind) {

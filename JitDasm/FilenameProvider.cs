@@ -93,6 +93,5 @@ namespace JitDasm {
 			}
 			return sb.ToString();
 		}
-
 	}
 }

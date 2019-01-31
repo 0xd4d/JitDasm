@@ -197,6 +197,8 @@ namespace JitDasm {
 					case "att":
 						options.DisassemblerOutputKind = DisassemblerOutputKind.Gas;
 						break;
+					default:
+						throw new CommandLineParserException($"Unknown disassembler kind: {next}");
 					}
 					i++;
 					break;
@@ -263,7 +265,8 @@ namespace JitDasm {
 			}
 
 			if (!string.IsNullOrEmpty(options.LoadModule)) {
-				options.Pid = Process.GetCurrentProcess().Id;
+				using (var process = Process.GetCurrentProcess())
+					options.Pid = process.Id;
 				options.ModuleName = options.LoadModule;
 			}
 
