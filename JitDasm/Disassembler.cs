@@ -113,8 +113,10 @@ namespace JitDasm {
 
 			bool upperCaseHex = formatter.Options.UpperCaseHex;
 
-			output.WriteLine(commentPrefix + "================================================================================");
-			output.WriteLine(commentPrefix + method.MethodFullName);
+			output.Write(commentPrefix);
+			output.WriteLine("================================================================================");
+			output.Write(commentPrefix);
+			output.WriteLine(method.MethodFullName);
 			uint codeSize = 0;
 			foreach (var info in method.Code)
 				codeSize += (uint)info.Code.Length;
