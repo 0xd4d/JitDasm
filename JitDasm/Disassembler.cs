@@ -40,7 +40,10 @@ namespace JitDasm {
 	sealed class Disassembler : ISymbolResolver {
 		const int TAB_SIZE = 4;
 		const string DIFFABLE_ADDRESS = "<diffable-addr>";
-		const ulong DIFFABLE_START_ADDR = 0x00100000;
+		const uint DIFFABLE_SYM_ADDR32_LO = 0x00100000;
+		const uint DIFFABLE_SYM_ADDR32_HI = 0x7FFFFFFF;
+		const ulong DIFFABLE_SYM_ADDR64_LO = 0x0000000000100000;
+		const ulong DIFFABLE_SYM_ADDR64_HI = 0x007FFFFFFFFFFFFF;
 		const int HEXBYTES_COLUMN_BYTE_LENGTH = 10;
 		const string LABEL_PREFIX = "LBL_";
 		const string FUNC_PREFIX = "FNC_";
@@ -54,6 +57,7 @@ namespace JitDasm {
 		readonly KnownSymbols knownSymbols;
 		readonly DisassemblerOptions disassemblerOptions;
 		readonly char[] charBuf;
+		readonly ulong diffableSymAddrLo, diffableSymAddrHi;
 		Formatter formatter;
 
 		bool Diffable => (disassemblerOptions & DisassemblerOptions.Diffable) != 0;
@@ -95,6 +99,14 @@ namespace JitDasm {
 			this.bitness = bitness;
 			this.commentPrefix = commentPrefix;
 			this.sourceCodeProvider = sourceCodeProvider;
+			if (bitness == 64) {
+				diffableSymAddrLo = DIFFABLE_SYM_ADDR64_LO;
+				diffableSymAddrHi = DIFFABLE_SYM_ADDR64_HI;
+			}
+			else {
+				diffableSymAddrLo = DIFFABLE_SYM_ADDR32_LO;
+				diffableSymAddrHi = DIFFABLE_SYM_ADDR32_HI;
+			}
 			targets = new Dictionary<ulong, AddressInfo>();
 			sortedTargets = new List<KeyValuePair<ulong, AddressInfo>>();
 			formatterOutput = new FormatterOutputImpl();
@@ -378,17 +390,17 @@ namespace JitDasm {
 					}
 					if (signedAddr < 0)
 						signedAddr = -signedAddr;
-					createDiffableSym = (ulong)signedAddr >= DIFFABLE_START_ADDR;
+					createDiffableSym = IsDiffableSymbolAddress((ulong)signedAddr);
 				}
 				else {
 					switch (instruction.Code) {
 					case Code.Mov_rm32_imm32:
 					case Code.Mov_r32_imm32:
-						createDiffableSym = bitness == 32 && address >= DIFFABLE_START_ADDR && instruction.Op0Kind == OpKind.Register;
+						createDiffableSym = bitness == 32 && IsDiffableSymbolAddress(address) && instruction.Op0Kind == OpKind.Register;
 						break;
 
 					case Code.Mov_r64_imm64:
-						createDiffableSym = address >= DIFFABLE_START_ADDR;
+						createDiffableSym = IsDiffableSymbolAddress(address);
 						break;
 
 					default:
@@ -416,5 +428,7 @@ namespace JitDasm {
 
 			return false;
 		}
+
+		bool IsDiffableSymbolAddress(ulong address) => diffableSymAddrLo <= address && address <= diffableSymAddrHi;
 	}
 }
