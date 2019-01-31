@@ -105,7 +105,7 @@ namespace JitDasm {
 					i++;
 					break;
 
-				case "--no-cctor":
+				case "--no-run-cctor":
 					options.RunClassConstructors = false;
 					break;
 
@@ -130,6 +130,10 @@ namespace JitDasm {
 
 				case "--no-bytes":
 					options.ShowHexBytes = false;
+					break;
+
+				case "--no-source":
+					options.ShowSourceCode = false;
 					break;
 
 				case "--heap-search":
@@ -312,7 +316,7 @@ namespace JitDasm {
 -pn, --process <name>           Process name
 -m, --module <name>             Name of module to disassemble
 -l, --load <module>             Load module (for execution) into this process and jit every method
---no-cctor                      Don't run all .cctors before jitting methods (used with -l)
+--no-run-cctor                  Don't run all .cctors before jitting methods (used with -l)
 --filename-format <fmt>         Filename format. <fmt>:
     name            => (default) member name
     tokname         => token + member name
@@ -335,6 +339,7 @@ namespace JitDasm {
 --diffable                      Create diffable disassembly
 --no-addr                       Don't show instruction addresses
 --no-bytes                      Don't show instruction bytes
+--no-source                     Don't show source code
 --heap-search                   Check the GC heap for instantiated generic types
 -s, --search <path>             Add assembly search paths (used with -l), {Path.PathSeparator}-delimited
 -h, --help                      Show this help message

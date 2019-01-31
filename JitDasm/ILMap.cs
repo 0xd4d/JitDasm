@@ -21,47 +21,16 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-using System.Collections.Generic;
-using Iced.Intel;
-
 namespace JitDasm {
-	sealed class DisasmInfo {
-		public uint TypeToken;
-		public string TypeFullName;
-		public uint MethodToken;
-		public string MethodFullName;
-		public string MethodName;
-		public string ModuleFilename;
-		public ILMap[] ILMap;
-		public readonly List<NativeCode> Code = new List<NativeCode>();
-		public readonly InstructionList Instructions = new InstructionList();
-
-		public bool Contains(ulong address) {
-			foreach (var code in Code) {
-				if ((address - code.IP) < (ulong)code.Code.Length)
-					return true;
-			}
-			return false;
-		}
-
-		public bool TryGetcode(ulong address, out NativeCode nativeCode) {
-			foreach (var code in Code) {
-				if ((address - code.IP) < (ulong)code.Code.Length) {
-					nativeCode = code;
-					return true;
-				}
-			}
-			nativeCode = default;
-			return false;
-		}
+	struct ILMap {// ILToNativeMap
+		public int ilOffset;// or IlToNativeMappingTypes
+		public ulong nativeStartAddress;
+		public ulong nativeEndAddress;
 	}
 
-	readonly struct NativeCode {
-		public readonly ulong IP;
-		public readonly byte[] Code;
-		public NativeCode(ulong ip, byte[] code) {
-			IP = ip;
-			Code = code;
-		}
+	enum IlToNativeMappingTypes {
+		NO_MAPPING = -1,
+		PROLOG     = -2,
+		EPILOG     = -3
 	}
 }

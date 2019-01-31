@@ -50,9 +50,14 @@ namespace JitDasm {
 				var jobs = GetJobs(methods, jitDasmOptions.OutputDir, jitDasmOptions.FileOutputKind, jitDasmOptions.FilenameFormat, out string baseDir);
 				if (!string.IsNullOrEmpty(baseDir))
 					Directory.CreateDirectory(baseDir);
-				var context = new DisasmJobContext(bitness, knownSymbols, jitDasmOptions.DisassemblerOutputKind, jitDasmOptions.Diffable, jitDasmOptions.ShowAddresses, jitDasmOptions.ShowHexBytes);
-				foreach (var job in jobs)
-					Disassemble(context, job);
+				var sourceDocumentProvider = new SourceDocumentProvider();
+				using (var mdProvider = new MetadataProvider()) {
+					var sourceCodeProvider = new SourceCodeProvider(mdProvider, sourceDocumentProvider);
+					using (var context = new DisasmJobContext(bitness, knownSymbols, sourceCodeProvider, jitDasmOptions.DisassemblerOutputKind, jitDasmOptions.Diffable, jitDasmOptions.ShowAddresses, jitDasmOptions.ShowHexBytes, jitDasmOptions.ShowSourceCode)) {
+						foreach (var job in jobs)
+							Disassemble(context, job);
+					}
+				}
 				return 0;
 			}
 			catch (ShowCommandLineHelpException) {
@@ -87,10 +92,11 @@ namespace JitDasm {
 			}
 		}
 
-		sealed class DisasmJobContext {
+		sealed class DisasmJobContext : IDisposable {
+			readonly SourceCodeProvider sourceCodeProvider;
 			public readonly Disassembler Disassembler;
 			public readonly Formatter Formatter;
-			public DisasmJobContext(int bitness, KnownSymbols knownSymbols, DisassemblerOutputKind disassemblerOutputKind, bool diffable, bool showAddresses, bool showHexBytes) {
+			public DisasmJobContext(int bitness, KnownSymbols knownSymbols, SourceCodeProvider sourceCodeProvider, DisassemblerOutputKind disassemblerOutputKind, bool diffable, bool showAddresses, bool showHexBytes, bool showSourceCode) {
 				var disassemblerOptions = DisassemblerOptions.None;
 				if (diffable)
 					disassemblerOptions |= DisassemblerOptions.Diffable;
@@ -98,6 +104,8 @@ namespace JitDasm {
 					disassemblerOptions |= DisassemblerOptions.ShowAddresses;
 				if (showHexBytes)
 					disassemblerOptions |= DisassemblerOptions.ShowHexBytes;
+				if (showSourceCode)
+					disassemblerOptions |= DisassemblerOptions.ShowSourceCode;
 				string commentPrefix;
 				switch (disassemblerOutputKind) {
 				case DisassemblerOutputKind.Masm:
@@ -110,9 +118,12 @@ namespace JitDasm {
 				default:
 					throw new ArgumentOutOfRangeException(nameof(disassemblerOutputKind));
 				}
-				Disassembler = new Disassembler(bitness, commentPrefix, knownSymbols, disassemblerOptions);
+				this.sourceCodeProvider = sourceCodeProvider;
+				Disassembler = new Disassembler(bitness, commentPrefix, sourceCodeProvider, knownSymbols, disassemblerOptions);
 				Formatter = CreateFormatter(Disassembler.SymbolResolver, diffable, disassemblerOutputKind);
 			}
+
+			public void Dispose() => sourceCodeProvider.Dispose();
 		}
 
 		sealed class SymbolResolverImpl : Iced.Intel.ISymbolResolver {
@@ -467,10 +478,33 @@ namespace JitDasm {
 			info.MethodToken = method.MetadataToken;
 			info.MethodFullName = method.ToString();
 			info.MethodName = method.Name;
+			info.ILMap = CreateILMap(method.ILOffsetMap);
+			if (method.Type.Module.IsFile)
+				info.ModuleFilename = method.Type.Module.FileName;
 			var codeInfo = method.HotColdInfo;
 			ReadCode(dataTarget, info, codeInfo.HotStart, codeInfo.HotSize);
 			ReadCode(dataTarget, info, codeInfo.ColdStart, codeInfo.ColdSize);
 			return info;
+		}
+
+		static ILMap[] CreateILMap(ILToNativeMap[] map) {
+			var result = new ILMap[map.Length];
+			for (int i = 0; i < result.Length; i++) {
+				ref var m = ref map[i];
+				result[i] = new ILMap {
+					ilOffset = m.ILOffset,
+					nativeStartAddress = m.StartAddress,
+					nativeEndAddress = m.EndAddress,
+				};
+			}
+			Array.Sort(result, (a, b) => {
+				int c = a.nativeStartAddress.CompareTo(b.nativeStartAddress);
+				if (c != 0)
+					return c;
+				return a.nativeEndAddress.CompareTo(b.nativeEndAddress);
+			});
+
+			return result;
 		}
 
 		static void ReadCode(DataTarget dataTarget, DisasmInfo info, ulong startAddr, uint size) {

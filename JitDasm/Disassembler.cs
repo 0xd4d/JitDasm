@@ -34,9 +34,11 @@ namespace JitDasm {
 		Diffable			= 0x00000001,
 		ShowAddresses		= 0x00000002,
 		ShowHexBytes		= 0x00000004,
+		ShowSourceCode		= 0x00000008,
 	}
 
 	sealed class Disassembler : ISymbolResolver {
+		const int TAB_SIZE = 4;
 		const string DIFFABLE_ADDRESS = "<diffable-addr>";
 		const ulong DIFFABLE_START_ADDR = 0x00100000;
 		const int HEXBYTES_COLUMN_BYTE_LENGTH = 10;
@@ -45,20 +47,28 @@ namespace JitDasm {
 
 		readonly int bitness;
 		readonly string commentPrefix;
+		readonly SourceCodeProvider sourceCodeProvider;
 		readonly Dictionary<ulong, AddressInfo> targets;
 		readonly List<KeyValuePair<ulong, AddressInfo>> sortedTargets;
 		readonly FormatterOutputImpl formatterOutput;
 		readonly KnownSymbols knownSymbols;
 		readonly DisassemblerOptions disassemblerOptions;
+		readonly char[] charBuf;
 		Formatter formatter;
 
 		bool Diffable => (disassemblerOptions & DisassemblerOptions.Diffable) != 0;
 		bool ShowAddresses => (disassemblerOptions & DisassemblerOptions.ShowAddresses) != 0;
 		bool ShowHexBytes => (disassemblerOptions & DisassemblerOptions.ShowHexBytes) != 0;
+		bool ShowSourceCode => (disassemblerOptions & DisassemblerOptions.ShowSourceCode) != 0;
 
 		sealed class AddressInfo {
 			public TargetKind Kind;
 			public string Name;
+			public int ILOffset;
+			public AddressInfo(TargetKind kind) {
+				Kind = kind;
+				ILOffset = (int)IlToNativeMappingTypes.NO_MAPPING;
+			}
 		}
 
 		enum TargetKind {
@@ -81,12 +91,14 @@ namespace JitDasm {
 
 		public ISymbolResolver SymbolResolver => this;
 
-		public Disassembler(int bitness, string commentPrefix, KnownSymbols knownSymbols, DisassemblerOptions disassemblerOptions) {
+		public Disassembler(int bitness, string commentPrefix, SourceCodeProvider sourceCodeProvider, KnownSymbols knownSymbols, DisassemblerOptions disassemblerOptions) {
 			this.bitness = bitness;
 			this.commentPrefix = commentPrefix;
+			this.sourceCodeProvider = sourceCodeProvider;
 			targets = new Dictionary<ulong, AddressInfo>();
 			sortedTargets = new List<KeyValuePair<ulong, AddressInfo>>();
 			formatterOutput = new FormatterOutputImpl();
+			charBuf = new char[100];
 			this.knownSymbols = knownSymbols;
 			this.disassemblerOptions = disassemblerOptions;
 			if ((disassemblerOptions & DisassemblerOptions.Diffable) != 0)
@@ -108,12 +120,15 @@ namespace JitDasm {
 				codeSize += (uint)info.Code.Length;
 			var codeSizeHexText = codeSize.ToString(upperCaseHex ? "X" : "x");
 			output.WriteLine($"{commentPrefix}{codeSize} (0x{codeSizeHexText}) bytes");
-			output.WriteLine();
 
 			void Add(ulong address, TargetKind kind) {
-				if (!targets.TryGetValue(address, out var addrInfo) || addrInfo.Kind < kind)
-					targets[address] = new AddressInfo { Kind = kind };
+				if (!targets.TryGetValue(address, out var addrInfo))
+					targets[address] = new AddressInfo(kind);
+				else if (addrInfo.Kind < kind)
+					addrInfo.Kind = kind;
 			}
+			if (method.Instructions.Count > 0)
+				Add(method.Instructions[0].IP64, TargetKind.Unknown);
 			foreach (ref var instr in method.Instructions) {
 				switch (instr.FlowControl) {
 				case FlowControl.Next:
@@ -181,6 +196,16 @@ namespace JitDasm {
 						Add(displ, TargetKind.Branch);
 				}
 			}
+			foreach (var map in method.ILMap) {
+				if (targets.TryGetValue(map.nativeStartAddress, out var info)) {
+					if (info.Kind < TargetKind.BlockStart && info.Kind != TargetKind.Unknown)
+						info.Kind = TargetKind.BlockStart;
+				}
+				else
+					targets.Add(map.nativeStartAddress, info = new AddressInfo(TargetKind.Unknown));
+				if (info.ILOffset < 0)
+					info.ILOffset = map.ilOffset;
+			}
 
 			int labelIndex = 0, methodIndex = 0;
 			string GetLabel(int index) => LABEL_PREFIX + index.ToString();
@@ -226,6 +251,23 @@ namespace JitDasm {
 						output.Write(':');
 						output.WriteLine();
 					}
+					if (lblInfo.ILOffset >= 0) {
+						if (ShowSourceCode) {
+							foreach (var info in sourceCodeProvider.GetStatementLines(method, lblInfo.ILOffset)) {
+								output.Write(commentPrefix);
+								var line = info.Line;
+								int column = commentPrefix.Length;
+								WriteWithTabs(output, line, 0, line.Length, '\0', ref column);
+								output.WriteLine();
+								if (info.Partial) {
+									output.Write(commentPrefix);
+									column = commentPrefix.Length;
+									WriteWithTabs(output, line, 0, info.Span.Start, ' ', ref column);
+									output.WriteLine(new string('^', info.Span.Length));
+								}
+							}
+						}
+					}
 				}
 
 				if (ShowAddresses) {
@@ -255,6 +297,30 @@ namespace JitDasm {
 				formatter.Format(ref instr, formatterOutput);
 				output.WriteLine();
 			}
+		}
+
+		void WriteWithTabs(TextWriter output, string line, int index, int length, char forceChar, ref int column) {
+			var buf = charBuf;
+			int bufIndex = 0;
+			for (int i = 0; i < length; i++) {
+				var c = line[i + index];
+				if (c == '\t') {
+					for (int j = 0; j < TAB_SIZE; j++)
+						Write(output, forceChar == '\0' ? ' ' : forceChar, buf, ref bufIndex);
+				}
+				else
+					Write(output, forceChar == '\0' ? c : forceChar, buf, ref bufIndex);
+			}
+			output.Write(buf, 0, bufIndex);
+		}
+
+		static void Write(TextWriter output, char c, char[] buf, ref int bufIndex) {
+			if (bufIndex >= buf.Length) {
+				output.Write(buf, 0, bufIndex);
+				bufIndex = 0;
+			}
+			buf[bufIndex] = c;
+			bufIndex++;
 		}
 
 		static string FormatAddress(int bitness, ulong address, bool upperCaseHex) {

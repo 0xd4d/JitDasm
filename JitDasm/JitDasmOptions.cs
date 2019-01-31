@@ -56,6 +56,7 @@ namespace JitDasm {
 		public bool Diffable = false;
 		public bool ShowAddresses = true;
 		public bool ShowHexBytes = true;
+		public bool ShowSourceCode = true;
 		public bool HeapSearch = false;
 		public bool RunClassConstructors = true;
 		public FilenameFormat FilenameFormat = FilenameFormat.MemberName;
