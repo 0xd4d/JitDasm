@@ -144,7 +144,7 @@ namespace JitDasm {
 			default:
 				throw new ArgumentOutOfRangeException(nameof(disassemblerOutputKind));
 			}
-			formatter.Options.FirstOperandCharIndex = 10;
+			formatter.Options.FirstOperandCharIndex = 8;
 			formatter.Options.MemorySizeOptions = MemorySizeOptions.Minimum;
 			formatter.Options.ShowBranchSize = !diffable;
 

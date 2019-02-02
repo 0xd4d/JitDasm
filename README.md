@@ -20,50 +20,50 @@ jitdasm -p 1234 --diffable -m ConsoleApp1 --method TestMethod
 ; ConsoleApp1.Program.TestMethod(System.String[])
 ; 87 (0x57) bytes
 
-        push      rdi
-        push      rsi
-        push      rbx
-        sub       rsp,20h
-        mov       rsi,rcx
-        mov       rcx,offset <diffable-addr>
-        mov       edx,58h
-        call      CORINFO_HELP_CLASSINIT_SHARED_DYNAMICCLASS
-        mov       rcx,offset <diffable-addr>
-        mov       rcx,[rcx]
-        mov       ecx,[rcx+8]
-        call      System.Console.WriteLine(Int32)
+        push    rdi
+        push    rsi
+        push    rbx
+        sub     rsp,20h
+        mov     rsi,rcx
+        mov     rcx,offset <diffable-addr>
+        mov     edx,58h
+        call    CORINFO_HELP_CLASSINIT_SHARED_DYNAMICCLASS
+        mov     rcx,offset <diffable-addr>
+        mov     rcx,[rcx]
+        mov     ecx,[rcx+8]
+        call    System.Console.WriteLine(Int32)
 
 ;           for (int i = 0; i < args.Length; i++)
 ;                ^^^^^^^^^
-        xor       edi,edi
+        xor     edi,edi
 
 ;           for (int i = 0; i < args.Length; i++)
 ;                           ^^^^^^^^^^^^^^^
-        mov       ebx,[rsi+8]
-        test      ebx,ebx
-        jle       LBL_1
+        mov     ebx,[rsi+8]
+        test    ebx,ebx
+        jle     LBL_1
 
 LBL_0:
 ;               Console.WriteLine(args[i]);
-        movsxd    rcx,edi
-        mov       rcx,[rsi+rcx*8+10h]
-        call      System.Console.WriteLine(System.String)
+        movsxd  rcx,edi
+        mov     rcx,[rsi+rcx*8+10h]
+        call    System.Console.WriteLine(System.String)
 
 ;           for (int i = 0; i < args.Length; i++)
 ;                                            ^^^
-        inc       edi
+        inc     edi
 
 ;           for (int i = 0; i < args.Length; i++)
 ;                           ^^^^^^^^^^^^^^^
-        cmp       ebx,edi
-        jg        LBL_0
+        cmp     ebx,edi
+        jg      LBL_0
 
 LBL_1:
 ;       }
-        add       rsp,20h
-        pop       rbx
-        pop       rsi
-        pop       rdi
+        add     rsp,20h
+        pop     rbx
+        pop     rsi
+        pop     rdi
         ret
 ```
 
