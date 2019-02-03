@@ -71,7 +71,7 @@ LBL_1:
 
 - Generic methods and methods in generic types can't be disassembled. It's possibly a DAC API limitation. Try `--heap-search` to find instantiated generic types on the heap.
 - IL <-> native IP mapping that JitDasm gets from the CLR isn't always accurate so some source code statements aren't shown, especially in optimized methods. This gets worse if there are a lot of inlined methods.
-- `-l` calls `PrepareMethod()` to jit methods in the loaded module. The jitted code isn't always identical to the code the jitter generates if the method is actually called at runtime, especially if it's .NET Framework. See [coreclr's pmi.cs](https://github.com/dotnet/jitutils/blob/master/src/pmi/pmi.cs#L28) for more info. You can create a test app that calls the methods at runtime and then use the `-p` or `-pn` JitDasm command line options to disassemble the code.
+- .NET Framework: `-l` calls `PrepareMethod()` to jit methods in the loaded module. The jitted code isn't always identical to the code the jitter generates if the method is actually called at runtime. See [coreclr's pmi.cs](https://github.com/dotnet/jitutils/blob/master/src/pmi/pmi.cs#L28) for more info. You can create a test app that calls the methods at runtime and then use the `-p` or `-pn` JitDasm command line options to disassemble the code.
 
 # Help message (`jitdasm -h`)
 
