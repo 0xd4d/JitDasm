@@ -62,7 +62,7 @@ namespace JitDasm {
 			}
 			catch (ShowCommandLineHelpException) {
 				CommandLineParser.ShowHelp();
-				return 0;
+				return 1;
 			}
 			catch (CommandLineParserException ex) {
 				Console.WriteLine(ex.Message);

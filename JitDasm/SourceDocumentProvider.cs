@@ -55,7 +55,7 @@ namespace JitDasm {
 		}
 
 		public IEnumerable<(string line, Span span, bool partial)> GetLines(string file, int startLine, int startColumn, int endLine, int endColumn) {
-			if (startLine < 1 || endLine < 1 || startColumn < 1 || endColumn < 0)
+			if (startLine < 1 || endLine < 1 || startColumn < 1 || endColumn < 1)
 				yield break;
 			var lines = GetDocument(file)?.Lines;
 			if (lines == null || lines.Length == 0)
