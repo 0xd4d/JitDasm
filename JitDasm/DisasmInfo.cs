@@ -44,7 +44,7 @@ namespace JitDasm {
 			return false;
 		}
 
-		public bool TryGetcode(ulong address, out NativeCode nativeCode) {
+		public bool TryGetCode(ulong address, out NativeCode nativeCode) {
 			foreach (var code in Code) {
 				if ((address - code.IP) < (ulong)code.Code.Length) {
 					nativeCode = code;

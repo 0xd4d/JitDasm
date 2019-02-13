@@ -293,7 +293,7 @@ namespace JitDasm {
 					output.Write(formatter.Options.TabSize > 0 ? "\t\t" : "        ");
 
 				if (ShowHexBytes) {
-					if (!method.TryGetcode(ip, out var nativeCode))
+					if (!method.TryGetCode(ip, out var nativeCode))
 						throw new InvalidOperationException();
 					var codeBytes = nativeCode.Code;
 					int index = (int)(ip - nativeCode.IP);
