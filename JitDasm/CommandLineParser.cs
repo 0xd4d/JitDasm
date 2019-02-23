@@ -223,14 +223,14 @@ namespace JitDasm {
 					i++;
 					break;
 
-				case "--type-ignore":
+				case "--type-exclude":
 					if (next == null)
 						throw new CommandLineParserException("Missing type name filter");
 					foreach (var elem in next.Split(typeTokSep, StringSplitOptions.RemoveEmptyEntries)) {
 						if (TryParseToken(elem, out uint tokenLo, out uint tokenHi))
-							options.TypeFilter.IgnoreTokensFilter.Add(tokenLo, tokenHi);
+							options.TypeFilter.ExcludeTokensFilter.Add(tokenLo, tokenHi);
 						else
-							options.TypeFilter.IgnoreNameFilter.Add(elem);
+							options.TypeFilter.ExcludeNameFilter.Add(elem);
 					}
 					i++;
 					break;
@@ -247,14 +247,14 @@ namespace JitDasm {
 					i++;
 					break;
 
-				case "--method-ignore":
+				case "--method-exclude":
 					if (next == null)
 						throw new CommandLineParserException("Missing method name filter");
 					foreach (var elem in next.Split(typeTokSep, StringSplitOptions.RemoveEmptyEntries)) {
 						if (TryParseToken(elem, out uint tokenLo, out uint tokenHi))
-							options.MethodFilter.IgnoreTokensFilter.Add(tokenLo, tokenHi);
+							options.MethodFilter.ExcludeTokensFilter.Add(tokenLo, tokenHi);
 						else
-							options.MethodFilter.IgnoreNameFilter.Add(elem);
+							options.MethodFilter.ExcludeNameFilter.Add(elem);
 					}
 					i++;
 					break;
@@ -336,9 +336,9 @@ namespace JitDasm {
     att             => same as gas
 -o, --output <path>             Output filename or directory
 --type <tok-or-name>            Disassemble this type (wildcards supported) or type token
---type-ignore <tok-or-name>     Don't disassemble this type (wildcards supported) or type token
+--type-exclude <tok-or-name>    Don't disassemble this type (wildcards supported) or type token
 --method <tok-or-name>          Disassemble this method (wildcards supported) or method token
---method-ignore <tok-or-name>   Don't disassemble this method (wildcards supported) or method token
+--method-exclude <tok-or-name>  Don't disassemble this method (wildcards supported) or method token
 --diffable                      Create diffable disassembly
 --no-addr                       Don't show instruction addresses
 --no-bytes                      Don't show instruction bytes

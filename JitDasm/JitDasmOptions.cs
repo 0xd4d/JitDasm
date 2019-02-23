@@ -80,8 +80,8 @@ namespace JitDasm {
 	sealed class MemberFilter {
 		public readonly RegexFilter NameFilter = new RegexFilter();
 		public readonly TokensFilter TokensFilter = new TokensFilter();
-		public readonly RegexFilter IgnoreNameFilter = new RegexFilter();
-		public readonly TokensFilter IgnoreTokensFilter = new TokensFilter();
+		public readonly RegexFilter ExcludeNameFilter = new RegexFilter();
+		public readonly TokensFilter ExcludeTokensFilter = new TokensFilter();
 
 		public bool IsMatch(string name, uint token) {
 			if (TokensFilter.HasTokens || NameFilter.HasFilters) {
@@ -92,11 +92,11 @@ namespace JitDasm {
 					return false;
 			}
 
-			if (IgnoreTokensFilter.HasTokens || IgnoreNameFilter.HasFilters) {
+			if (ExcludeTokensFilter.HasTokens || ExcludeNameFilter.HasFilters) {
 				bool match =
-					!((IgnoreTokensFilter.HasTokens && IgnoreTokensFilter.IsMatch(token)) ||
-					(IgnoreNameFilter.HasFilters || IgnoreNameFilter.IsMatch(name)));
-				if (!match)
+					(ExcludeTokensFilter.HasTokens && ExcludeTokensFilter.IsMatch(token)) ||
+					(ExcludeNameFilter.HasFilters && ExcludeNameFilter.IsMatch(name));
+				if (match)
 					return false;
 			}
 

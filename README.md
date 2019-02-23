@@ -99,9 +99,9 @@ Disassembles jitted methods in .NET processes
     att             => same as gas
 -o, --output <path>             Output filename or directory
 --type <tok-or-name>            Disassemble this type (wildcards supported) or type token
---type-ignore <tok-or-name>     Don't disassemble this type (wildcards supported) or type token
+--type-exclude <tok-or-name>    Don't disassemble this type (wildcards supported) or type token
 --method <tok-or-name>          Disassemble this method (wildcards supported) or method token
---method-ignore <tok-or-name>   Don't disassemble this method (wildcards supported) or method token
+--method-exclude <tok-or-name>  Don't disassemble this method (wildcards supported) or method token
 --diffable                      Create diffable disassembly
 --no-addr                       Don't show instruction addresses
 --no-bytes                      Don't show instruction bytes
