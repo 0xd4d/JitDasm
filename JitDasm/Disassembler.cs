@@ -142,7 +142,7 @@ namespace JitDasm {
 					addrInfo.Kind = kind;
 			}
 			if (method.Instructions.Count > 0)
-				Add(method.Instructions[0].IP64, TargetKind.Unknown);
+				Add(method.Instructions[0].IP, TargetKind.Unknown);
 			foreach (ref var instr in method.Instructions) {
 				switch (instr.FlowControl) {
 				case FlowControl.Next:
@@ -150,7 +150,7 @@ namespace JitDasm {
 					break;
 
 				case FlowControl.UnconditionalBranch:
-					Add(instr.NextIP64, TargetKind.Unknown);
+					Add(instr.NextIP, TargetKind.Unknown);
 					if (instr.Op0Kind == OpKind.NearBranch16 || instr.Op0Kind == OpKind.NearBranch32 || instr.Op0Kind == OpKind.NearBranch64)
 						Add(instr.NearBranchTarget, TargetKind.Branch);
 					break;
@@ -167,7 +167,7 @@ namespace JitDasm {
 					break;
 
 				case FlowControl.IndirectBranch:
-					Add(instr.NextIP64, TargetKind.Unknown);
+					Add(instr.NextIP, TargetKind.Unknown);
 					// Unknown target
 					break;
 
@@ -177,7 +177,7 @@ namespace JitDasm {
 
 				case FlowControl.Return:
 				case FlowControl.Exception:
-					Add(instr.NextIP64, TargetKind.Unknown);
+					Add(instr.NextIP, TargetKind.Unknown);
 					break;
 
 				default:
@@ -257,7 +257,7 @@ namespace JitDasm {
 			}
 
 			foreach (ref var instr in method.Instructions) {
-				ulong ip = instr.IP64;
+				ulong ip = instr.IP;
 				if (targets.TryGetValue(ip, out var lblInfo)) {
 					output.WriteLine();
 					if (lblInfo.Name != null) {
@@ -361,8 +361,16 @@ namespace JitDasm {
 				return true;
 			}
 
-			if (knownSymbols.TryGetSymbol(address, out symbol))
+			if (knownSymbols.TryGetSymbol(address, out symbol)) {
+				if (instruction.OpCount == 1 && (instruction.Op0Kind == OpKind.Memory || instruction.Op0Kind == OpKind.Memory64)) {
+					var code = instruction.Code;
+					if (code == Code.Call_rm32 || code == Code.Jmp_rm32)
+						symbol = new SymbolResult(symbol.Address, symbol.Text, symbol.Flags, MemorySize.DwordOffset);
+					else if (code == Code.Call_rm64 || code == Code.Jmp_rm64)
+						symbol = new SymbolResult(symbol.Address, symbol.Text, symbol.Flags, MemorySize.QwordOffset);
+				}
 				return true;
+			}
 
 			if (Diffable && instructionOperand >= 0) {
 				bool createDiffableSym;

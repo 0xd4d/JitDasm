@@ -322,7 +322,7 @@ namespace JitDasm {
 			foreach (var info in disasmInfo.Code) {
 				var reader = new ByteArrayCodeReader(info.Code);
 				var decoder = Decoder.Create(runtime.PointerSize * 8, reader);
-				decoder.InstructionPointer = info.IP;
+				decoder.IP = info.IP;
 				while (reader.CanReadByte) {
 					ref var instr = ref instrs.AllocUninitializedElement();
 					decoder.Decode(out instr);
