@@ -1,0 +1,28 @@
+name: GitHub CI
+on: push
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install .NET Core
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri 'https://dot.net/v1/dotnet-install.ps1' -UseBasicParsing -OutFile "$env:temp\dotnet-install.ps1"
+          & $env:temp\dotnet-install.ps1 -Version 3.0.100 -InstallDir "$env:ProgramFiles\dotnet" -Architecture x64
+
+      - name: Build
+        run: build.cmd
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: JitDasm-net472
+          path: JitDasm/bin/Release/net472
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: JitDasm-netcoreapp3.0
+          path: JitDasm/bin/Release/netcoreapp3.0
