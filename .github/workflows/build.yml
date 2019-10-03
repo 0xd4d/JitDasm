@@ -5,14 +5,9 @@ jobs:
   build:
     name: Build
     runs-on: windows-latest
+
     steps:
       - uses: actions/checkout@v1
-
-      - name: Install .NET Core
-        shell: pwsh
-        run: |
-          Invoke-WebRequest -Uri 'https://dot.net/v1/dotnet-install.ps1' -UseBasicParsing -OutFile "$env:temp\dotnet-install.ps1"
-          & $env:temp\dotnet-install.ps1 -Version 3.0.100 -InstallDir "$env:ProgramFiles\dotnet" -Architecture x64
 
       - name: Build
         run: build.cmd
