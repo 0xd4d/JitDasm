@@ -42,7 +42,7 @@ namespace JitDasm {
 			toDocument = new Dictionary<string, Document>(StringComparer.OrdinalIgnoreCase);
 		}
 
-		Document GetDocument(string file) {
+		Document? GetDocument(string file) {
 			lock (lockObj) {
 				if (toDocument.TryGetValue(file, out var document))
 					return document;
@@ -58,7 +58,7 @@ namespace JitDasm {
 			if (startLine < 1 || endLine < 1 || startColumn < 1 || endColumn < 1)
 				yield break;
 			var lines = GetDocument(file)?.Lines;
-			if (lines == null || lines.Length == 0)
+			if (lines is null || lines.Length == 0)
 				yield break;
 			startLine = Math.Min(startLine, lines.Length);
 			endLine = Math.Min(endLine, lines.Length);

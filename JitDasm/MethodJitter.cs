@@ -34,19 +34,22 @@ namespace JitDasm {
 		readonly string[] searchPaths;
 		readonly MemberFilter typeFilter;
 		readonly MemberFilter methodFilter;
-		readonly Dictionary<string, Assembly> nameToAssembly;
+		readonly Dictionary<string, Assembly?> nameToAssembly;
 
 		MethodJitter(string module, MemberFilter typeFilter, MemberFilter methodFilter, bool runClassConstructors, IEnumerable<string> searchPaths) {
 			this.typeFilter = typeFilter;
 			this.methodFilter = methodFilter;
 			var paths = new List<string>();
-			paths.Add(Path.GetDirectoryName(Path.GetFullPath(module)));
+			var modulePath = Path.GetDirectoryName(Path.GetFullPath(module));
+			if (modulePath is null)
+				throw new ArgumentException(nameof(module));
+			paths.Add(modulePath);
 			foreach (var path in searchPaths) {
 				if (Directory.Exists(path))
 					paths.Add(path);
 			}
 			this.searchPaths = paths.ToArray();
-			nameToAssembly = new Dictionary<string, Assembly>();
+			nameToAssembly = new Dictionary<string, Assembly?>();
 #if NETCOREAPP
 			System.Runtime.Loader.AssemblyLoadContext.Default.Resolving += AssemblyLoadContext_Resolving;
 #elif NETFRAMEWORK
@@ -59,7 +62,7 @@ namespace JitDasm {
 			var allTypes = GetTypes(asm).ToArray();
 			if (runClassConstructors) {
 				foreach (var type in allTypes) {
-					if ((object)type.TypeInitializer != null) {
+					if (!(type.TypeInitializer is null)) {
 						try {
 							RuntimeHelpers.RunClassConstructor(type.TypeHandle);
 						}
@@ -70,7 +73,7 @@ namespace JitDasm {
 				}
 			}
 			foreach (var type in allTypes) {
-				if (!typeFilter.IsMatch(MakeClrmdTypeName(type.FullName), (uint)type.MetadataToken))
+				if (!typeFilter.IsMatch(MakeClrmdTypeName(type.FullName ?? string.Empty), (uint)type.MetadataToken))
 					continue;
 				bool isDelegate = typeof(Delegate).IsAssignableFrom(type);
 				foreach (var method in GetMethods(type)) {
@@ -91,7 +94,7 @@ namespace JitDasm {
 					catch (Exception ex) {
 						string methodName;
 						try {
-							methodName = method.ToString();
+							methodName = method.ToString() ?? "???";
 						}
 						catch {
 							methodName = $"{method.Name} ({method.MetadataToken:X8})";
@@ -118,12 +121,12 @@ namespace JitDasm {
 				allTypes = asm.GetTypes();
 			}
 			catch (ReflectionTypeLoadException ex) {
-				allTypes = ex.Types;
+				allTypes = ex.Types ?? Array.Empty<Type>();
 				Console.WriteLine("Failed to load one or more types");
 			}
 			bool ignoredTypeMessage = false;
 			foreach (var type in allTypes) {
-				if ((object)type != null) {
+				if (!(type is null)) {
 					if (type.IsGenericTypeDefinition) {
 						if (!ignoredTypeMessage) {
 							ignoredTypeMessage = true;
@@ -137,14 +140,16 @@ namespace JitDasm {
 		}
 
 #if NETCOREAPP
-		Assembly AssemblyLoadContext_Resolving(System.Runtime.Loader.AssemblyLoadContext context, AssemblyName name) => ResolveAssembly(name.Name);
+		Assembly? AssemblyLoadContext_Resolving(System.Runtime.Loader.AssemblyLoadContext context, AssemblyName name) => ResolveAssembly(name.Name);
 #elif NETFRAMEWORK
-		Assembly AppDomain_AssemblyResolve(object sender, ResolveEventArgs e) => ResolveAssembly(new AssemblyName(e.Name).Name);
+		Assembly? AppDomain_AssemblyResolve(object? sender, ResolveEventArgs e) => ResolveAssembly(new AssemblyName(e.Name).Name);
 #else
 #error Unknown target framework
 #endif
 
-		Assembly ResolveAssembly(string name) {
+		Assembly? ResolveAssembly(string? name) {
+			if (name is null)
+				return null;
 			if (nameToAssembly.TryGetValue(name, out var asm))
 				return asm;
 			nameToAssembly.Add(name, null);

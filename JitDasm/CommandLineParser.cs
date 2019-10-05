@@ -50,7 +50,7 @@ namespace JitDasm {
 
 				case "-p":
 				case "--pid":
-					if (next == null)
+					if (next is null)
 						throw new CommandLineParserException("Missing pid value");
 					if (!int.TryParse(next, out options.Pid))
 						throw new CommandLineParserException($"Invalid pid: {next}");
@@ -66,9 +66,9 @@ namespace JitDasm {
 
 				case "-pn":
 				case "--process":
-					if (next == null)
+					if (next is null)
 						throw new CommandLineParserException("Missing process name");
-					Process[] processes = null;
+					Process[]? processes = null;
 					try {
 						processes = Process.GetProcessesByName(next);
 						if (processes.Length == 0)
@@ -79,7 +79,7 @@ namespace JitDasm {
 						VerifyProcess(processes[0]);
 					}
 					finally {
-						if (processes != null) {
+						if (!(processes is null)) {
 							foreach (var p in processes)
 								p.Dispose();
 						}
@@ -89,7 +89,7 @@ namespace JitDasm {
 
 				case "-m":
 				case "--module":
-					if (next == null)
+					if (next is null)
 						throw new CommandLineParserException("Missing module name");
 					options.ModuleName = next;
 					i++;
@@ -97,7 +97,7 @@ namespace JitDasm {
 
 				case "-l":
 				case "--load":
-					if (next == null)
+					if (next is null)
 						throw new CommandLineParserException("Missing module filename");
 					if (!File.Exists(next))
 						throw new CommandLineParserException($"Could not find module {next}");
@@ -111,7 +111,7 @@ namespace JitDasm {
 
 				case "-s":
 				case "--search":
-					if (next == null)
+					if (next is null)
 						throw new CommandLineParserException("Missing assembly search path");
 					foreach (var path in next.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries)) {
 						if (Directory.Exists(path))
@@ -141,7 +141,7 @@ namespace JitDasm {
 					break;
 
 				case "--filename-format":
-					if (next == null)
+					if (next is null)
 						throw new CommandLineParserException("Missing filename format");
 					switch (next) {
 					case "name":
@@ -161,7 +161,7 @@ namespace JitDasm {
 
 				case "-f":
 				case "--file":
-					if (next == null)
+					if (next is null)
 						throw new CommandLineParserException("Missing filename kind");
 					switch (next) {
 					case "stdout":
@@ -184,7 +184,7 @@ namespace JitDasm {
 
 				case "-d":
 				case "--disasm":
-					if (next == null)
+					if (next is null)
 						throw new CommandLineParserException("Missing disassembler kind");
 					switch (next) {
 					case "masm":
@@ -205,14 +205,14 @@ namespace JitDasm {
 
 				case "-o":
 				case "--output":
-					if (next == null)
+					if (next is null)
 						throw new CommandLineParserException("Missing output file/dir");
 					options.OutputDir = next;
 					i++;
 					break;
 
 				case "--type":
-					if (next == null)
+					if (next is null)
 						throw new CommandLineParserException("Missing type name filter");
 					foreach (var elem in next.Split(typeTokSep, StringSplitOptions.RemoveEmptyEntries)) {
 						if (TryParseToken(elem, out uint tokenLo, out uint tokenHi))
@@ -224,7 +224,7 @@ namespace JitDasm {
 					break;
 
 				case "--type-exclude":
-					if (next == null)
+					if (next is null)
 						throw new CommandLineParserException("Missing type name filter");
 					foreach (var elem in next.Split(typeTokSep, StringSplitOptions.RemoveEmptyEntries)) {
 						if (TryParseToken(elem, out uint tokenLo, out uint tokenHi))
@@ -236,7 +236,7 @@ namespace JitDasm {
 					break;
 
 				case "--method":
-					if (next == null)
+					if (next is null)
 						throw new CommandLineParserException("Missing method name filter");
 					foreach (var elem in next.Split(typeTokSep, StringSplitOptions.RemoveEmptyEntries)) {
 						if (TryParseToken(elem, out uint tokenLo, out uint tokenHi))
@@ -248,7 +248,7 @@ namespace JitDasm {
 					break;
 
 				case "--method-exclude":
-					if (next == null)
+					if (next is null)
 						throw new CommandLineParserException("Missing method name filter");
 					foreach (var elem in next.Split(typeTokSep, StringSplitOptions.RemoveEmptyEntries)) {
 						if (TryParseToken(elem, out uint tokenLo, out uint tokenHi))
@@ -264,7 +264,7 @@ namespace JitDasm {
 				}
 			}
 
-			if (!string.IsNullOrEmpty(options.LoadModule)) {
+			if (!string2.IsNullOrEmpty(options.LoadModule)) {
 				using (var process = Process.GetCurrentProcess())
 					options.Pid = process.Id;
 				options.ModuleName = options.LoadModule;
@@ -312,7 +312,7 @@ namespace JitDasm {
 		static void VerifyProcess(Process process) { }
 
 		public static void ShowHelp() {
-			var exe = Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location);
+			var exe = Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly()!.Location);
 			var msg = $@"Disassembles jitted methods in .NET processes
 
 -p, --pid <pid>                 Process id

@@ -46,9 +46,9 @@ namespace JitDasm {
 
 	sealed class JitDasmOptions {
 		public int Pid;
-		public string ModuleName;
-		public string LoadModule;
-		public string OutputDir;
+		public string ModuleName = string.Empty;
+		public string? LoadModule;
+		public string OutputDir = string.Empty;
 		public readonly List<string> AssemblySearchPaths = new List<string>();
 
 		public readonly MemberFilter TypeFilter = new MemberFilter();

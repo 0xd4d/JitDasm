@@ -53,20 +53,20 @@ namespace JitDasm {
 	sealed class SourceCodeProvider : IDisposable {
 		readonly MetadataProvider metadataProvider;
 		readonly SourceDocumentProvider sourceDocumentProvider;
-		ModuleDef lastModule;
-		MethodDef lastMethod;
+		ModuleDef? lastModule;
+		MethodDef? lastMethod;
 
 		public SourceCodeProvider(MetadataProvider metadataProvider, SourceDocumentProvider sourceDocumentProvider) {
 			this.metadataProvider = metadataProvider;
 			this.sourceDocumentProvider = sourceDocumentProvider;
 		}
 
-		MethodDef GetMetadataMethod(DisasmInfo method) {
+		MethodDef? GetMetadataMethod(DisasmInfo method) {
 			if (!StringComparer.OrdinalIgnoreCase.Equals(lastModule?.Location, method.ModuleFilename)) {
 				lastModule = metadataProvider.GetModule(method.ModuleFilename);
 				lastMethod = null;
 			}
-			if (lastModule?.PdbState == null)
+			if (lastModule?.PdbState is null)
 				return null;
 			if (lastMethod?.MDToken.Raw != method.MethodToken)
 				lastMethod = lastModule?.ResolveToken(method.MethodToken) as MethodDef;
@@ -75,11 +75,11 @@ namespace JitDasm {
 
 		public IEnumerable<StatementInfo> GetStatementLines(DisasmInfo method, int ilOffset) {
 			var instrs = GetMetadataMethod(method)?.Body?.Instructions;
-			if (instrs == null)
+			if (instrs is null)
 				yield break;
 			var instr = GetInstruction(instrs, (uint)ilOffset);
 			var seqPoint = instr?.SequencePoint;
-			if (seqPoint == null)
+			if (seqPoint is null)
 				yield break;
 
 			const int HIDDEN = 0xFEEFEE;
@@ -90,7 +90,7 @@ namespace JitDasm {
 				yield return new StatementInfo(info.line, info.span, info.partial);
 		}
 
-		Instruction GetInstruction(IList<Instruction> instructions, uint offset) {
+		Instruction? GetInstruction(IList<Instruction> instructions, uint offset) {
 			int lo = 0, hi = instructions.Count - 1;
 			while (lo <= hi && hi != -1) {
 				int i = (lo + hi) / 2;

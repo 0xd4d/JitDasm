@@ -58,7 +58,6 @@ namespace JitDasm {
 		readonly DisassemblerOptions disassemblerOptions;
 		readonly char[] charBuf;
 		readonly ulong diffableSymAddrLo, diffableSymAddrHi;
-		Formatter formatter;
 
 		bool Diffable => (disassemblerOptions & DisassemblerOptions.Diffable) != 0;
 		bool ShowAddresses => (disassemblerOptions & DisassemblerOptions.ShowAddresses) != 0;
@@ -67,7 +66,7 @@ namespace JitDasm {
 
 		sealed class AddressInfo {
 			public TargetKind Kind;
-			public string Name;
+			public string? Name;
 			public int ILOffset;
 			public AddressInfo(TargetKind kind) {
 				Kind = kind;
@@ -89,8 +88,8 @@ namespace JitDasm {
 		}
 
 		sealed class FormatterOutputImpl : FormatterOutput {
-			public TextWriter writer;
-			public override void Write(string text, FormatterOutputTextKind kind) => writer.Write(text);
+			public TextWriter? writer;
+			public override void Write(string text, FormatterOutputTextKind kind) => writer!.Write(text);
 		}
 
 		public ISymbolResolver SymbolResolver => this;
@@ -118,7 +117,6 @@ namespace JitDasm {
 		}
 
 		public void Disassemble(Formatter formatter, TextWriter output, DisasmInfo method) {
-			this.formatter = formatter;
 			formatterOutput.writer = output;
 			targets.Clear();
 			sortedTargets.Clear();
@@ -260,7 +258,7 @@ namespace JitDasm {
 				ulong ip = instr.IP;
 				if (targets.TryGetValue(ip, out var lblInfo)) {
 					output.WriteLine();
-					if (lblInfo.Name != null) {
+					if (!(lblInfo.Name is null)) {
 						output.Write(lblInfo.Name);
 						output.Write(':');
 						output.WriteLine();
@@ -356,7 +354,7 @@ namespace JitDasm {
 		}
 
 		bool ISymbolResolver.TryGetSymbol(in Instruction instruction, int operand, int instructionOperand, ulong address, int addressSize, out SymbolResult symbol) {
-			if (targets.TryGetValue(address, out var addrInfo) && addrInfo.Name != null) {
+			if (targets.TryGetValue(address, out var addrInfo) && !(addrInfo.Name is null)) {
 				symbol = new SymbolResult(address, addrInfo.Name);
 				return true;
 			}

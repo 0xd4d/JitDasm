@@ -21,38 +21,14 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-using System;
-using System.Collections.Generic;
-using dnlib.DotNet;
+// This is needed because net472 reference assemblies don't have any nullable attributes
 
-namespace JitDasm {
-	sealed class MetadataProvider : IDisposable {
-		readonly object lockObj;
-		readonly List<ModuleDefMD> modules;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
-		public MetadataProvider() {
-			lockObj = new object();
-			modules = new List<ModuleDefMD>();
-		}
-
-		public ModuleDef? GetModule(string? filename) {
-			if (string2.IsNullOrEmpty(filename))
-				return null;
-			lock (lockObj) {
-				foreach (var module in modules) {
-					if (StringComparer.OrdinalIgnoreCase.Equals(module.Location, filename))
-						return module;
-				}
-				var mod = ModuleDefMD.Load(filename);
-				modules.Add(mod);
-				return mod;
-			}
-		}
-
-		public void Dispose() {
-			foreach (var module in modules)
-				module.Dispose();
-			modules.Clear();
-		}
+namespace System {
+	static class string2 {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool IsNullOrEmpty([NotNullWhen(false)] string? value) => string.IsNullOrEmpty(value);
 	}
 }

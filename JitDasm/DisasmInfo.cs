@@ -26,15 +26,25 @@ using Iced.Intel;
 
 namespace JitDasm {
 	sealed class DisasmInfo {
-		public uint TypeToken;
-		public string TypeFullName;
-		public uint MethodToken;
-		public string MethodFullName;
-		public string MethodName;
-		public string ModuleFilename;
-		public ILMap[] ILMap;
+		public readonly uint TypeToken;
+		public readonly string TypeFullName;
+		public readonly uint MethodToken;
+		public readonly string MethodFullName;
+		public readonly string MethodName;
+		public readonly string? ModuleFilename;
+		public readonly ILMap[] ILMap;
 		public readonly List<NativeCode> Code = new List<NativeCode>();
 		public readonly InstructionList Instructions = new InstructionList();
+
+		public DisasmInfo(uint typeToken, string typeFullName, uint methodToken, string methodFullName, string methodName, string? moduleFilename, ILMap[] ilMap) {
+			TypeToken = typeToken;
+			TypeFullName = typeFullName;
+			MethodToken = methodToken;
+			MethodFullName = methodFullName;
+			MethodName = methodName;
+			ModuleFilename = moduleFilename;
+			ILMap = ilMap;
+		}
 
 		public bool Contains(ulong address) {
 			foreach (var code in Code) {

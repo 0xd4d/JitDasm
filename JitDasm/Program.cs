@@ -44,11 +44,11 @@ namespace JitDasm {
 				}
 
 				var jitDasmOptions = CommandLineParser.Parse(args);
-				if (!string.IsNullOrEmpty(jitDasmOptions.LoadModule))
+				if (!string2.IsNullOrEmpty(jitDasmOptions.LoadModule))
 					MethodJitter.JitMethods(jitDasmOptions.LoadModule, jitDasmOptions.TypeFilter, jitDasmOptions.MethodFilter, jitDasmOptions.RunClassConstructors, jitDasmOptions.AssemblySearchPaths);
 				var (bitness, methods, knownSymbols) = GetMethodsToDisassemble(jitDasmOptions.Pid, jitDasmOptions.ModuleName, jitDasmOptions.TypeFilter, jitDasmOptions.MethodFilter, jitDasmOptions.HeapSearch);
-				var jobs = GetJobs(methods, jitDasmOptions.OutputDir, jitDasmOptions.FileOutputKind, jitDasmOptions.FilenameFormat, out string baseDir);
-				if (!string.IsNullOrEmpty(baseDir))
+				var jobs = GetJobs(methods, jitDasmOptions.OutputDir, jitDasmOptions.FileOutputKind, jitDasmOptions.FilenameFormat, out var baseDir);
+				if (!string2.IsNullOrEmpty(baseDir))
 					Directory.CreateDirectory(baseDir);
 				var sourceDocumentProvider = new SourceDocumentProvider();
 				using (var mdProvider = new MetadataProvider()) {
@@ -188,7 +188,7 @@ namespace JitDasm {
 			return x.MethodToken.CompareTo(y.MethodToken);
 		}
 
-		static DisasmJob[] GetJobs(DisasmInfo[] methods, string outputDir, FileOutputKind fileOutputKind, FilenameFormat filenameFormat, out string baseDir) {
+		static DisasmJob[] GetJobs(DisasmInfo[] methods, string outputDir, FileOutputKind fileOutputKind, FilenameFormat filenameFormat, out string? baseDir) {
 			FilenameProvider filenameProvider;
 			var jobs = new List<DisasmJob>();
 
@@ -270,7 +270,7 @@ namespace JitDasm {
 					StringComparer.OrdinalIgnoreCase.Equals(a.Name, moduleName) ||
 					StringComparer.OrdinalIgnoreCase.Equals(Path.GetFileNameWithoutExtension(a.Name), moduleName) ||
 					StringComparer.OrdinalIgnoreCase.Equals(a.FileName, moduleName));
-				if (module == null)
+				if (module is null)
 					throw new ApplicationException($"Couldn't find module '{moduleName}'");
 
 				foreach (var type in EnumerateTypes(module, heapSearch)) {
@@ -420,23 +420,23 @@ namespace JitDasm {
 			string name;
 
 			name = runtime.GetJitHelperFunctionName(address);
-			if (name != null) {
+			if (!(name is null)) {
 				result = new SymbolResult(address, name, FormatterOutputTextKind.Function);
 				return true;
 			}
 
 			name = runtime.GetMethodTableName(address);
-			if (name != null) {
+			if (!(name is null)) {
 				result = new SymbolResult(address, "methodtable(" + name + ")", FormatterOutputTextKind.Data);
 				return true;
 			}
 
-			var method = runtime.GetMethodByAddress(address);
-			if (method == null && (address & ((uint)runtime.PointerSize - 1)) == 0 && (flags & AddSymbolFlags.CallMem) != 0) {
+			ClrMethod? method = runtime.GetMethodByAddress(address);
+			if (method is null && (address & ((uint)runtime.PointerSize - 1)) == 0 && (flags & AddSymbolFlags.CallMem) != 0) {
 				if (runtime.ReadPointer(address, out ulong newAddress) && newAddress >= MIN_ADDR)
 					method = runtime.GetMethodByAddress(newAddress);
 			}
-			if (method != null && (flags & AddSymbolFlags.CanBeMethod) == 0) {
+			if (!(method is null) && (flags & AddSymbolFlags.CanBeMethod) == 0) {
 				// There can be data at the end of the method, after the code. Don't return a method symbol.
 				//		vdivsd    xmm2,xmm2,[Some.Type.Method(Double)]	; wrong
 				var info = method.HotColdInfo;
@@ -444,8 +444,8 @@ namespace JitDasm {
 				if (!isCode)
 					method = null;
 			}
-			if (method != null) {
-				result = new SymbolResult(address, method.ToString(), FormatterOutputTextKind.Function);
+			if (!(method is null)) {
+				result = new SymbolResult(address, method.ToString() ?? "???", FormatterOutputTextKind.Function);
 				return true;
 			}
 
@@ -454,15 +454,7 @@ namespace JitDasm {
 		}
 
 		static DisasmInfo CreateDisasmInfo(DataTarget dataTarget, ClrMethod method) {
-			var info = new DisasmInfo();
-			info.TypeToken = method.Type.MetadataToken;
-			info.TypeFullName = method.Type.Name;
-			info.MethodToken = method.MetadataToken;
-			info.MethodFullName = method.ToString();
-			info.MethodName = method.Name;
-			info.ILMap = CreateILMap(method.ILOffsetMap);
-			if (method.Type.Module.IsFile)
-				info.ModuleFilename = method.Type.Module.FileName;
+			var info = new DisasmInfo(method.Type.MetadataToken, method.Type.Name, method.MetadataToken, method.ToString() ?? "???", method.Name, method.Type.Module.IsFile ? method.Type.Module.FileName : null, CreateILMap(method.ILOffsetMap));
 			var codeInfo = method.HotColdInfo;
 			ReadCode(dataTarget, info, codeInfo.HotStart, codeInfo.HotSize);
 			ReadCode(dataTarget, info, codeInfo.ColdStart, codeInfo.ColdSize);
