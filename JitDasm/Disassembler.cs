@@ -308,7 +308,7 @@ namespace JitDasm {
 					output.Write(" ");
 				}
 
-				formatter.Format(ref instr, formatterOutput);
+				formatter.Format(instr, formatterOutput);
 				output.WriteLine();
 			}
 		}
@@ -355,7 +355,7 @@ namespace JitDasm {
 			}
 		}
 
-		bool ISymbolResolver.TryGetSymbol(int operand, int instructionOperand, ref Instruction instruction, ulong address, int addressSize, out SymbolResult symbol) {
+		bool ISymbolResolver.TryGetSymbol(in Instruction instruction, int operand, int instructionOperand, ulong address, int addressSize, out SymbolResult symbol) {
 			if (targets.TryGetValue(address, out var addrInfo) && addrInfo.Name != null) {
 				symbol = new SymbolResult(address, addrInfo.Name);
 				return true;
