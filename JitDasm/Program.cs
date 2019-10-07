@@ -110,6 +110,7 @@ namespace JitDasm {
 				switch (disassemblerOutputKind) {
 				case DisassemblerOutputKind.Masm:
 				case DisassemblerOutputKind.Nasm:
+				case DisassemblerOutputKind.Intel:
 					commentPrefix = "; ";
 					break;
 				case DisassemblerOutputKind.Gas:
@@ -139,6 +140,10 @@ namespace JitDasm {
 
 			case DisassemblerOutputKind.Gas:
 				formatter = new GasFormatter(new GasFormatterOptions(), symbolResolver);
+				break;
+
+			case DisassemblerOutputKind.Intel:
+				formatter = new IntelFormatter(new IntelFormatterOptions(), symbolResolver);
 				break;
 
 			default:

@@ -42,6 +42,7 @@ namespace JitDasm {
 		Masm,
 		Nasm,
 		Gas,
+		Intel,
 	}
 
 	sealed class JitDasmOptions {

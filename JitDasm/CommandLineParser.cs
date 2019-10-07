@@ -197,6 +197,9 @@ namespace JitDasm {
 					case "att":
 						options.DisassemblerOutputKind = DisassemblerOutputKind.Gas;
 						break;
+					case "intel":
+						options.DisassemblerOutputKind = DisassemblerOutputKind.Intel;
+						break;
 					default:
 						throw new CommandLineParserException($"Unknown disassembler kind: {next}");
 					}
@@ -334,6 +337,7 @@ namespace JitDasm {
     nasm            => NASM syntax
     gas             => GNU assembler (AT&T) syntax
     att             => same as gas
+    intel           => Intel (XED) syntax
 -o, --output <path>             Output filename or directory
 --type <tok-or-name>            Disassemble this type (wildcards supported) or type token
 --type-exclude <tok-or-name>    Don't disassemble this type (wildcards supported) or type token
