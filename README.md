@@ -1,4 +1,4 @@
-﻿# JitDasm
+# JitDasm
 
 Disassembles one or more .NET methods / types to stdout or file(s). It can also create diffable disassembly.
 
