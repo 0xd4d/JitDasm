@@ -20,5 +20,10 @@ jobs:
 
       - uses: actions/upload-artifact@v1
         with:
+          name: JitDasm-netcoreapp2.1
+          path: JitDasm/bin/Release/netcoreapp2.1
+
+      - uses: actions/upload-artifact@v1
+        with:
           name: JitDasm-netcoreapp3.0
           path: JitDasm/bin/Release/netcoreapp3.0
