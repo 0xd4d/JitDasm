@@ -2,8 +2,8 @@ name: GitHub CI
 on: push
 
 jobs:
-  build:
-    name: Build
+  build-windows:
+    name: Build (Windows)
     runs-on: windows-latest
 
     steps:
@@ -27,3 +27,15 @@ jobs:
         with:
           name: JitDasm-netcoreapp3.0
           path: JitDasm/bin/Release/netcoreapp3.0
+
+  # Make sure it builds on Linux too
+  build-ubuntu:
+    name: Build (Ubuntu)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Build
+        shell: pwsh
+        run: ./build.ps1
