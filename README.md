@@ -19,6 +19,7 @@ jitdasm -p 1234 --diffable -m ConsoleApp1 --method TestMethod
 ; ================================================================================
 ; ConsoleApp1.Program.TestMethod(System.String[])
 ; 87 (0x57) bytes
+; 27 (0x1B) instructions
 
         push    rdi
         push    rsi
@@ -97,6 +98,7 @@ Disassembles jitted methods in .NET processes
     nasm            => NASM syntax
     gas             => GNU assembler (AT&T) syntax
     att             => same as gas
+    intel           => Intel (XED) syntax
 -o, --output <path>             Output filename or directory
 --type <tok-or-name>            Disassemble this type (wildcards supported) or type token
 --type-exclude <tok-or-name>    Don't disassemble this type (wildcards supported) or type token

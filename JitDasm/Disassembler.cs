@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Iced.Intel;
 
 namespace JitDasm {
@@ -132,6 +133,9 @@ namespace JitDasm {
 				codeSize += (uint)info.Code.Length;
 			var codeSizeHexText = codeSize.ToString(upperCaseHex ? "X" : "x");
 			output.WriteLine($"{commentPrefix}{codeSize} (0x{codeSizeHexText}) bytes");
+			var instrCount = method.Instructions.Count;
+			var instrCountHexText = instrCount.ToString(upperCaseHex ? "X" : "x");
+			output.WriteLine($"{commentPrefix}{instrCount} (0x{instrCountHexText}) instructions");
 
 			void Add(ulong address, TargetKind kind) {
 				if (!targets.TryGetValue(address, out var addrInfo))
