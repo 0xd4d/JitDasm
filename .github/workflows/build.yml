@@ -2,12 +2,29 @@ name: GitHub CI
 on: push
 
 jobs:
-  build-windows:
-    name: Build (Windows)
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Build
+        shell: pwsh
+        run: ./build.ps1
+
+  publish:
+    name: Publish (Windows)
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - name: Checkout
+        uses: actions/checkout@v1
 
       - name: Build
         shell: pwsh
@@ -28,14 +45,33 @@ jobs:
           name: JitDasm-netcoreapp3.0
           path: JitDasm/bin/Release/netcoreapp3.0
 
-  # Make sure it builds on Linux too
-  build-ubuntu:
-    name: Build (Ubuntu)
-    runs-on: ubuntu-latest
+      - name: Pack NuGet packages (CI versions)
+        if: startsWith(github.ref, 'refs/heads/')
+        shell: bash
+        env:
+          PACKING: true
+        run: dotnet pack --configuration Release --output nupkgs --version-suffix "ci.$(date -u +%Y%m%dT%H%M%S)+sha.${GITHUB_SHA:0:9}" ./JitDasm/JitDasm.csproj
 
-    steps:
-      - uses: actions/checkout@v1
+      - name: Pack NuGet packages (Release versions)
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          PACKING: true
+        run: dotnet pack --configuration Release --output nupkgs ./JitDasm/JitDasm.csproj
+        
+      - name: Upload artifacts (nupkg)
+        uses: actions/upload-artifact@v1
+        with:
+          name: JitDasm+sha.${{ github.sha }}
+          path: nupkgs
 
-      - name: Build
-        shell: pwsh
-        run: ./build.ps1
+      - name: Publish packages to GitHub Package Registry 
+        env:  
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE: https://nuget.pkg.github.com/0xd4d/index.json
+        shell: bash
+        run: |
+          cd nupkgs
+          curl -o nuget -L https://dist.nuget.org/win-x86-commandline/latest/nuget.exe  
+          ./nuget sources add -Name "GitHub" -Source $SOURCE -UserName 0xd4d -Password "$TOKEN"
+          ./nuget push "JitDasm.*.nupkg" -Source "GitHub"
