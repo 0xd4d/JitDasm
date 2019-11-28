@@ -275,6 +275,9 @@ namespace JitDasm {
 				var clrRuntime = clrInfo.CreateRuntime(clrInfo.LocalMatchingDac);
 				bitness = clrRuntime.PointerSize * 8;
 
+				// Per https://github.com/microsoft/clrmd/issues/303
+				dataTarget.DataReader.Flush();
+
 				var module = clrRuntime.Modules.FirstOrDefault(a =>
 					StringComparer.OrdinalIgnoreCase.Equals(a.Name, moduleName) ||
 					StringComparer.OrdinalIgnoreCase.Equals(Path.GetFileNameWithoutExtension(a.Name), moduleName) ||
