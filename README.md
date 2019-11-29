@@ -2,6 +2,14 @@
 
 Disassembles one or more .NET methods / types to stdout or file(s). It can also create diffable disassembly.
 
+# .NET global tool
+
+It's available as a .NET global tool
+
+```cmd
+dotnet tool install -g [JitDasm.0xd4d](https://www.nuget.org/packages/JitDasm.0xd4d/)
+```
+
 # Tips
 
 - .NET Core: Disable tiered compilation in target process: `COMPlus_TieredCompilation=0`
