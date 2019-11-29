@@ -60,20 +60,27 @@ jobs:
         env:
           PACKING: true
         run: dotnet pack --configuration Release --output nupkgs ./JitDasm/JitDasm.csproj
-        
+
       - name: Upload artifacts (nupkg)
         uses: actions/upload-artifact@v1
         with:
           name: JitDasm+sha.${{ github.sha }}
           path: nupkgs
 
-      - name: Publish packages to GitHub Package Registry 
-        env:  
+      - name: Publish packages to GitHub Package Registry
+        env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SOURCE: https://nuget.pkg.github.com/0xd4d/index.json
         shell: bash
         run: |
           cd nupkgs
-          curl -o nuget -L https://dist.nuget.org/win-x86-commandline/latest/nuget.exe  
+          curl -o nuget -L https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
           ./nuget sources add -Name "GitHub" -Source $SOURCE -UserName 0xd4d -Password "$TOKEN"
           ./nuget push "JitDasm.*.nupkg" -Source "GitHub"
+
+      - name: Upload to nuget.org if it's a new release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -UseBasicParsing -OutFile nuget.exe
+          Get-ChildItem nupkgs\JitDasm.*.nupkg -Exclude "*-ci*" | ForEach-Object { .\nuget.exe push $_.FullName -ApiKey ${{secrets.NUGET_APIKEY}} -NonInteractive -Source https://api.nuget.org/v3/index.json }
