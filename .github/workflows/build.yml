@@ -3,6 +3,7 @@ on: push
 
 jobs:
   build:
+    name: Build (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -20,6 +21,7 @@ jobs:
 
   publish:
     name: Publish (Windows)
+    needs: build
     runs-on: windows-latest
 
     steps:

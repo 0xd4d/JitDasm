@@ -116,7 +116,7 @@ namespace JitDasm {
 		}
 
 		static IEnumerable<Type> GetTypes(Assembly asm) {
-			Type[] allTypes;
+			Type?[] allTypes;
 			try {
 				allTypes = asm.GetTypes();
 			}

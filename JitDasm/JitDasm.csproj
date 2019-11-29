@@ -14,15 +14,18 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>jitdasm</ToolCommandName>
     <VersionPrefix>0.1.0</VersionPrefix>
-    <!-- Nupkg stuff -->
-    <Title>JitDasm</Title>
     <Description>Disassembles one or more .NET methods / types to stdout or file(s). It can also create diffable disassembly.</Description>
+    <Title>$(Description)</Title>
     <Authors>0xd4d</Authors>
     <PackageProjectUrl>https://github.com/0xd4d/JitDasm</PackageProjectUrl>
-    <License>https://raw.githubusercontent.com/0xd4d/JitDasm/master/LICENSE.txt</License>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/0xd4d/JitDasm</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>jit disassembly</PackageTags>
+    <PackageTags>jit;disassembly;disassembler;.net;dotnet;coreclr;clr</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <NoWarn>NU5105</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,7 +35,6 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0-preview.2" PrivateAssets="All" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
-
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
