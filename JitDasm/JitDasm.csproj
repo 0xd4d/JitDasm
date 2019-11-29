@@ -2,11 +2,27 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp3.0;netcoreapp2.1;net472</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0;netcoreapp2.1</TargetFrameworks>
+    <!-- It's not possible to target .NET Framework 4.7.2 when using dotnet pack
+         together with packaging as a tool -->
+    <NoTargetFrameworkNet472 Condition=" '$(PACKING)' == 'true' ">true</NoTargetFrameworkNet472>
+    <TargetFrameworks Condition=" '$(NoTargetFrameworkNet472)' != 'true' ">$(TargetFrameworks);net472</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <nullable>enable</nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Features>strict</Features>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>jitdasm</ToolCommandName>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <!-- Nupkg stuff -->
+    <Title>JitDasm</Title>
+    <Description>Disassembles one or more .NET methods / types to stdout or file(s). It can also create diffable disassembly.</Description>
+    <Authors>0xd4d</Authors>
+    <PackageProjectUrl>https://github.com/0xd4d/JitDasm</PackageProjectUrl>
+    <License>https://raw.githubusercontent.com/0xd4d/JitDasm/master/LICENSE.txt</License>
+    <RepositoryUrl>https://github.com/0xd4d/JitDasm</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>jit disassembly</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +30,9 @@
     <PackageReference Include="Iced" Version="1.4.0" />
     <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="1.1.57604" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0-preview.2" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
+
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
