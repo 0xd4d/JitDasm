@@ -4,10 +4,10 @@ Disassembles one or more .NET methods / types to stdout or file(s). It can also 
 
 # .NET global tool
 
-It's available as a .NET global tool
+It's available as a [.NET global tool](https://www.nuget.org/packages/JitDasm.0xd4d/)
 
 ```cmd
-dotnet tool install -g [JitDasm.0xd4d](https://www.nuget.org/packages/JitDasm.0xd4d/)
+dotnet tool install -g JitDasm.0xd4d
 ```
 
 # Tips
