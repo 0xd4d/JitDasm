@@ -17,6 +17,8 @@
     <Description>Disassembles one or more .NET methods / types to stdout or file(s). It can also create diffable disassembly.</Description>
     <Title>$(Description)</Title>
     <Authors>0xd4d</Authors>
+    <!-- name is too similar to an unlisted package jit-dasm from 2016. Yeah, that's going to confuse everyone, NuGet! -->
+    <PackageId>JitDasm.0xd4d</PackageId>
     <PackageProjectUrl>https://github.com/0xd4d/JitDasm</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/0xd4d/JitDasm</RepositoryUrl>
