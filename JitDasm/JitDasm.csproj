@@ -31,9 +31,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="dnlib" Version="3.3.0" />
+    <PackageReference Include="dnlib" Version="3.3.1" />
     <PackageReference Include="Iced" Version="1.4.0" />
-    <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="1.1.57604" />
+    <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="1.1.61812" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
