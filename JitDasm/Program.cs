@@ -433,13 +433,13 @@ namespace JitDasm {
 
 			name = runtime.GetJitHelperFunctionName(address);
 			if (!(name is null)) {
-				result = new SymbolResult(address, name, FormatterOutputTextKind.Function);
+				result = new SymbolResult(address, name, FormatterTextKind.Function);
 				return true;
 			}
 
 			name = runtime.GetMethodTableName(address);
 			if (!(name is null)) {
-				result = new SymbolResult(address, "methodtable(" + name + ")", FormatterOutputTextKind.Data);
+				result = new SymbolResult(address, "methodtable(" + name + ")", FormatterTextKind.Data);
 				return true;
 			}
 
@@ -457,7 +457,7 @@ namespace JitDasm {
 					method = null;
 			}
 			if (!(method is null)) {
-				result = new SymbolResult(address, method.ToString() ?? "???", FormatterOutputTextKind.Function);
+				result = new SymbolResult(address, method.ToString() ?? "???", FormatterTextKind.Function);
 				return true;
 			}
 

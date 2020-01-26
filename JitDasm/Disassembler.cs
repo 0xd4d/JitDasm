@@ -90,7 +90,7 @@ namespace JitDasm {
 
 		sealed class FormatterOutputImpl : FormatterOutput {
 			public TextWriter? writer;
-			public override void Write(string text, FormatterOutputTextKind kind) => writer!.Write(text);
+			public override void Write(string text, FormatterTextKind kind) => writer!.Write(text);
 		}
 
 		public ISymbolResolver SymbolResolver => this;
@@ -299,7 +299,7 @@ namespace JitDasm {
 						throw new InvalidOperationException();
 					var codeBytes = nativeCode.Code;
 					int index = (int)(ip - nativeCode.IP);
-					int instrLen = instr.ByteLength;
+					int instrLen = instr.Length;
 					for (int i = 0; i < instrLen; i++) {
 						byte b = codeBytes[index + i];
 						output.Write(b.ToString(upperCaseHex ? "X2" : "x2"));
