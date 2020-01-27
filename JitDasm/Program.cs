@@ -286,7 +286,7 @@ namespace JitDasm {
 					throw new ApplicationException($"Couldn't find module '{moduleName}'");
 
 				module.Runtime.Flush();
-				
+
 				foreach (var type in EnumerateTypes(module, heapSearch)) {
 					if (!typeFilter.IsMatch(type.Name, type.MetadataToken))
 						continue;
