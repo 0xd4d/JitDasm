@@ -13,7 +13,7 @@
     <Features>strict</Features>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>jitdasm</ToolCommandName>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>1.0.1</VersionPrefix>
     <Description>Disassembles one or more .NET methods / types to stdout or file(s). It can also create diffable disassembly.</Description>
     <Title>$(Description)</Title>
     <Authors>0xd4d</Authors>
