@@ -135,19 +135,20 @@ namespace JitDasm {
 			Formatter formatter;
 			switch (disassemblerOutputKind) {
 			case DisassemblerOutputKind.Masm:
-				formatter = new MasmFormatter(new MasmFormatterOptions { AddDsPrefix32 = false }, symbolResolver);
+				formatter = new MasmFormatter(symbolResolver);
+				formatter.Options.MasmAddDsPrefix32 = false;
 				break;
 
 			case DisassemblerOutputKind.Nasm:
-				formatter = new NasmFormatter(new NasmFormatterOptions(), symbolResolver);
+				formatter = new NasmFormatter(symbolResolver);
 				break;
 
 			case DisassemblerOutputKind.Gas:
-				formatter = new GasFormatter(new GasFormatterOptions(), symbolResolver);
+				formatter = new GasFormatter(symbolResolver);
 				break;
 
 			case DisassemblerOutputKind.Intel:
-				formatter = new IntelFormatter(new IntelFormatterOptions(), symbolResolver);
+				formatter = new IntelFormatter(symbolResolver);
 				break;
 
 			default:

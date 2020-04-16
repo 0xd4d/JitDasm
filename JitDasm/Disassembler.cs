@@ -122,7 +122,7 @@ namespace JitDasm {
 			targets.Clear();
 			sortedTargets.Clear();
 
-			bool upperCaseHex = formatter.Options.UpperCaseHex;
+			bool uppercaseHex = formatter.Options.UppercaseHex;
 
 			output.Write(commentPrefix);
 			output.WriteLine("================================================================================");
@@ -131,10 +131,10 @@ namespace JitDasm {
 			uint codeSize = 0;
 			foreach (var info in method.Code)
 				codeSize += (uint)info.Code.Length;
-			var codeSizeHexText = codeSize.ToString(upperCaseHex ? "X" : "x");
+			var codeSizeHexText = codeSize.ToString(uppercaseHex ? "X" : "x");
 			output.WriteLine($"{commentPrefix}{codeSize} (0x{codeSizeHexText}) bytes");
 			var instrCount = method.Instructions.Count;
-			var instrCountHexText = instrCount.ToString(upperCaseHex ? "X" : "x");
+			var instrCountHexText = instrCount.ToString(uppercaseHex ? "X" : "x");
 			output.WriteLine($"{commentPrefix}{instrCount} (0x{instrCountHexText}) instructions");
 
 			void Add(ulong address, TargetKind kind) {
@@ -287,7 +287,7 @@ namespace JitDasm {
 				}
 
 				if (ShowAddresses) {
-					var address = FormatAddress(bitness, ip, upperCaseHex);
+					var address = FormatAddress(bitness, ip, uppercaseHex);
 					output.Write(address);
 					output.Write(" ");
 				}
@@ -302,7 +302,7 @@ namespace JitDasm {
 					int instrLen = instr.Length;
 					for (int i = 0; i < instrLen; i++) {
 						byte b = codeBytes[index + i];
-						output.Write(b.ToString(upperCaseHex ? "X2" : "x2"));
+						output.Write(b.ToString(uppercaseHex ? "X2" : "x2"));
 					}
 					int missingBytes = HEXBYTES_COLUMN_BYTE_LENGTH - instrLen;
 					for (int i = 0; i < missingBytes; i++)
