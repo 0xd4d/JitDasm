@@ -1,5 +1,13 @@
 name: GitHub CI
-on: push
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  release:
+    types: released
 
 jobs:
   build:
@@ -33,41 +41,46 @@ jobs:
         run: .\build.ps1
 
       - uses: actions/upload-artifact@v1
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
         with:
           name: JitDasm-net472
           path: JitDasm/bin/Release/net472
 
       - uses: actions/upload-artifact@v1
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
         with:
           name: JitDasm-netcoreapp2.1
           path: JitDasm/bin/Release/netcoreapp2.1
 
       - uses: actions/upload-artifact@v1
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
         with:
           name: JitDasm-netcoreapp3.0
           path: JitDasm/bin/Release/netcoreapp3.0
 
       - name: Pack NuGet packages (CI versions)
-        if: startsWith(github.ref, 'refs/heads/')
+        if: github.ref == 'refs/heads/master'
         shell: bash
         env:
           PACKING: true
         run: dotnet pack --configuration Release --output nupkgs --version-suffix "ci.$(date -u +%Y%m%dT%H%M%S)+sha.${GITHUB_SHA:0:9}" ./JitDasm/JitDasm.csproj
 
       - name: Pack NuGet packages (Release versions)
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/')
         shell: bash
         env:
           PACKING: true
         run: dotnet pack --configuration Release --output nupkgs ./JitDasm/JitDasm.csproj
 
       - name: Upload artifacts (nupkg)
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v1
         with:
           name: JitDasm+sha.${{ github.sha }}
           path: nupkgs
 
       - name: Publish packages to GitHub Package Registry
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SOURCE: https://nuget.pkg.github.com/0xd4d/index.json
@@ -79,7 +92,7 @@ jobs:
           ./nuget push "JitDasm.*.nupkg" -Source "GitHub"
 
       - name: Upload to nuget.org if it's a new release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/')
         shell: pwsh
         run: |
           Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -UseBasicParsing -OutFile nuget.exe
