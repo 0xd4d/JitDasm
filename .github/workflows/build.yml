@@ -57,8 +57,8 @@ jobs:
       - uses: actions/upload-artifact@v2
         if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
         with:
-          name: JitDasm-netcoreapp3.0
-          path: JitDasm/bin/Release/netcoreapp3.0
+          name: JitDasm-netcoreapp3.1
+          path: JitDasm/bin/Release/netcoreapp3.1
           if-no-files-found: error
 
       - name: Pack NuGet packages (CI versions)
